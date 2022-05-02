@@ -16,8 +16,8 @@ const { NotImplementedError } = require('../extensions/index.js');
  */
 function calculateHanoi(disksNumber, turnsSpeed) {
   let hanoiTower = {};
-  hanoiTower['turns'] = (2**disksNumber) - 1;
-  hanoiTower['seconds'] = Math.floor((hanoiTower['turns'] / (turnsSpeed / 60)) * 60);
+  hanoiTower['turns'] = Math.pow(2, disksNumber) - 1;
+  hanoiTower['seconds'] = Math.floor((hanoiTower['turns'] / (turnsSpeed / 3600)));
   return hanoiTower;
 }
 

@@ -13,56 +13,48 @@ const { NotImplementedError } = require('../extensions/index.js');
  * transform([1, 2, 3, '--discard-prev', 4, 5]) => [1, 2, 4, 5]
  * 
  */
-function transform( arr ) {
-  let addedElement = '';
-  let newArr = arr;
-    if (!Array.isArray(arr)) {
-      throw new Error ("'arr' parameter must be an instance of the Array!")
-    }
-    if (!arr.length) {
-      return [];
-    }
-    for (let i = 0; i < newArr.length; i++) {
-      switch (newArr[i]) {
-        case '--discard-next':
-          if (i + 1 > arr.length) {
-            newArr = newArr.splice(i, 1)
-            return newArr;         
-          } else {
-            newArr = newArr.splice(i + 1, 1)
-            return newArr;
-          }
-        case '--discard-prev':
-          if (i - 1 < 0) {
-            newArr = newArr.splice(i, 1)
-            return newArr;         
-          } else {
-            newArr = newArr.splice(i - 1, 1)
-            return newArr;
-          }
-        case '--double-next':
-          if (i + 1 > arr.length) {
-            newArr = newArr.splice(i, 1)
-            return newArr;         
-          } else {
-            addedElement = arr[i + 1]
-            newArr = newArr.splice(i + 1, 1, addedElement)
-            return newArr;
-          }
-        case '--double-prev':
-          if (i + 1 < 0) {
-            newArr = newArr.splice(i, 1)
-            return newArr;         
-          } else {
-            addedElement = arr[i + 1]
-            newArr = newArr.splice(i + 1, addedElement)
-            return newArr;
-          }
-        default: 
-        return arr;
-      }
-    }   
+ function transform(arr) {
+  let newArr = {};
+  let newObj = [];
+  let shouldSkipNext = false;
+  let isPrevSkipped = false;
+ 
+  if (!Array.isArray(arr)) {
+    throw new Error("'arr' parameter must be an instance of the Array!");
   }
+  newArr["--discard-next"] = function(i) {   
+    shouldSkipNext = true;
+  };
+  newArr["--discard-prev"] = function(i) {    
+    newObj.pop();    
+  };
+  newArr["--double-next"] = function(i) {   
+    if (arr[i + 1]) {    
+    newObj.push(arr[i + 1]);    
+    }
+  };
+  newArr["--double-prev"] = function(i) {  
+    if (arr[i - 1]) {
+    newObj.push(arr[i - 1]);
+    }   
+  };
+  arr.forEach((elem,i) => {
+    if(shouldSkipNext) {
+      shouldSkipNext = false;
+      isPrevSkipped = true;
+      return;
+    }
+    if (newArr[elem] && isPrevSkipped) {
+      return;
+    }
+    if (newArr[elem] && !isPrevSkipped) {
+        return newArr[elem](i);
+    } 
+    newObj.push(elem);
+    isPrevSkipped = false;    
+  }); 
+    return newObj;
+}
 
 module.exports = {
   transform
